@@ -13,6 +13,7 @@ The assets folder contains a simple web app written in Vue that uses the socket.
 You can also run the solution is Azure ACI with the following command:
 
 az group create -g realtime-rg -l westeurope
+
 az container create --resource-group realtime-rg --file multi.yaml
 
 When the container group is created, go the the IP of the container group (e.g. http://ip:8888)
