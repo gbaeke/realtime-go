@@ -1,0 +1,35 @@
+apiVersion: 2018-06-01
+location: westeuope
+name: realtime-app
+properties:
+  containers:
+  - name: realtime-service
+    properties:
+      image: gbaeke/realtime-go
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 0.5
+      ports:
+      - port: 8888
+  - name: realtime-redis
+    properties:
+      image: library/redis
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1.5
+      ports:
+      - port: 6379
+  osType: Linux
+  ipAddress:
+    dnsNameLabel: realtime-go-app
+    type: Public
+    ports:
+    - protocol: tcp
+      port: '8888'
+    - protocol: tcp
+      port: '6379'
+  restartPolicy: Always
+tags: null
+type: Microsoft.ContainerInstance/containerGroups
