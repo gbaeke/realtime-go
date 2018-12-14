@@ -20,7 +20,7 @@ func getEnv(key, fallback string) string {
 func main() {
 	// redis connection
 	client := redis.NewClient(&redis.Options{
-		Addr: getEnv("REDISHOST", "localhost:3679"),
+		Addr: getEnv("REDISHOST", "localhost:6379"),
 	})
 
 	// subscribe to all channels
