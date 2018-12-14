@@ -3,15 +3,24 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-redis/redis"
 	socketio "github.com/googollee/go-socket.io"
 )
 
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
+}
+
 func main() {
 	// redis connection
 	client := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: getEnv("REDISHOST", "localhost:3679"),
 	})
 
 	// subscribe to all channels
