@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-redis/redis"
 	socketio "github.com/googollee/go-socket.io"
+	"github.com/mholt/certmagic"
+	"github.com/xenolf/lego/providers/dns/cloudflare"
 )
 
 func getEnv(key, fallback string) string {
@@ -18,6 +20,12 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
+	// check RTHOST environment variable
+	rthost := getEnv("RTHOST", "")
+	if rthost == "" {
+		log.Fatalln("Please set RTHOST to domain to request certificate for")
+	}
+
 	// redis connection
 	client := redis.NewClient(&redis.Options{
 		Addr: getEnv("REDISHOST", "localhost:6379"),
@@ -69,8 +77,20 @@ func main() {
 		}
 	}(server)
 
-	http.Handle("/socket.io/", server)
-	http.Handle("/", http.FileServer(http.Dir("./assets")))
-	log.Println("Serving on localhost:8888...")
-	log.Fatal(http.ListenAndServe(":8888", nil))
+	// certificate magic
+	certmagic.Agreed = true
+	certmagic.CA = certmagic.LetsEncryptStagingCA
+
+	cloudflare, err := cloudflare.NewDNSProvider()
+	if err != nil {
+		log.Fatal(err)
+	}
+	certmagic.DNSProvider = cloudflare
+
+	mux := http.NewServeMux()
+	mux.Handle("/socket.io/", server)
+	mux.Handle("/", http.FileServer(http.Dir("./assets")))
+
+	certmagic.HTTPS([]string{rthost}, mux)
+
 }

@@ -5,20 +5,28 @@ properties:
   containers:
   - name: realtime-service
     properties:
-      image: gbaeke/realtime-go
+      image: gbaeke/realtime-go-le
+      environmentVariables:
+        - name: 'RTHOST'
+          value: 'HOST'
+        - name: 'CLOUDFLARE_EMAIL'
+          value: 'EMAIL'
+        - name: 'CLOUDFLARE_API_KEY'
+          value: 'APIKEY'
       resources:
         requests:
-          cpu: 1
-          memoryInGb: 0.5
+          cpu: 0.1
+          memoryInGb: 0.2
       ports:
-      - port: 8888
+      - port: 80
+      - port: 443
   - name: realtime-redis
     properties:
       image: library/redis
       resources:
         requests:
-          cpu: 1
-          memoryInGb: 1.5
+          cpu: 0.2
+          memoryInGb: 0.3
       ports:
       - port: 6379
   osType: Linux
@@ -27,7 +35,9 @@ properties:
     type: Public
     ports:
     - protocol: tcp
-      port: '8888'
+      port: '80'
+    - protocol: tcp
+      port: '443'
     - protocol: tcp
       port: '6379'
   restartPolicy: Always
