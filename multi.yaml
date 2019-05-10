@@ -1,5 +1,5 @@
 apiVersion: 2018-10-01
-location: westeuope
+location: westeurope
 name: realtime-app
 properties:
   containers:
