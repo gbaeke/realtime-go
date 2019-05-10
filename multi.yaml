@@ -1,25 +1,17 @@
-apiVersion: 2018-06-01
+apiVersion: 2018-10-01
 location: westeuope
 name: realtime-app
 properties:
   containers:
   - name: realtime-service
     properties:
-      image: gbaeke/realtime-go-le
-      environmentVariables:
-        - name: 'RTHOST'
-          value: 'HOST'
-        - name: 'CLOUDFLARE_EMAIL'
-          value: 'EMAIL'
-        - name: 'CLOUDFLARE_API_KEY'
-          value: 'APIKEY'
+      image: gbaeke/realtime-course
       resources:
         requests:
           cpu: 0.1
           memoryInGb: 0.2
       ports:
-      - port: 80
-      - port: 443
+      - port: 8080
   - name: realtime-redis
     properties:
       image: library/redis
@@ -31,13 +23,11 @@ properties:
       - port: 6379
   osType: Linux
   ipAddress:
-    dnsNameLabel: realtime-go-app
     type: Public
+    dnsNameLabel: realtime-go-app-geba
     ports:
     - protocol: tcp
-      port: '80'
-    - protocol: tcp
-      port: '443'
+      port: '8080'
     - protocol: tcp
       port: '6379'
   restartPolicy: Always
