@@ -18,12 +18,6 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
-	// check RTHOST environment variable
-	rthost := getEnv("RTHOST", "")
-	if rthost == "" {
-		log.Fatalln("Please set RTHOST to domain to request certificate for")
-	}
-
 	// redis connection
 	client := redis.NewClient(&redis.Options{
 		Addr: getEnv("REDISHOST", "localhost:6379"),
@@ -79,6 +73,6 @@ func main() {
 	mux.Handle("/socket.io/", server)
 	mux.Handle("/", http.FileServer(http.Dir("./assets")))
 
-	http.ListenAndServe(":80", mux)
+	http.ListenAndServe(":8080", mux)
 
 }
