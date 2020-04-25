@@ -38,28 +38,10 @@ func main() {
 	pong, err := client.Ping().Result()
 	log.Println(pong, err)
 
-	server, err := socketio.NewServer(nil)
-	if err != nil {
-		log.Fatal(err)
+	server := getWSServer("channel")
+	if server == nil {
+		log.Fatalln("Could not create WebSockets server")
 	}
-	server.On("connection", func(so socketio.Socket) {
-		log.Printf("New connection from %s ", so.Id())
-
-		// listen from channel message from client and join client to the channel name
-		so.On("channel", func(channel string) {
-			log.Printf("%s joins channel %s\n", so.Id(), channel)
-			so.Join(channel)
-			so.BroadcastTo(channel, "hello")
-		})
-
-		so.On("disconnection", func() {
-			log.Printf("disconnect from %s\n", so.Id())
-		})
-	})
-
-	server.On("error", func(so socketio.Socket, err error) {
-		log.Println("error:", err)
-	})
 
 	// Consume messages from Redis
 	go func(srv *socketio.Server) {
@@ -71,8 +53,15 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/socket.io/", server)
-	mux.Handle("/", http.FileServer(http.Dir("./assets")))
+	//mux.Handle("/", http.FileServer(http.Dir("./assets")))
+	mux.HandleFunc("/", handle)
 
 	http.ListenAndServe(":8080", mux)
+
+}
+
+func handle(w http.ResponseWriter, req *http.Request) {
+
+	http.ServeFile(w, req, "./assets")
 
 }

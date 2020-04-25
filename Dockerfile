@@ -4,9 +4,6 @@ ARG GO_VERSION=1.11
 # STAGE 1: building the executable
 FROM golang:${GO_VERSION}-alpine AS build
 
-# certificates
-RUN apk add --no-cache ca-certificates
-
 # git required for go mod
 RUN apk add --no-cache git
 
@@ -20,6 +17,9 @@ RUN go mod download
 # Import code
 COPY ./ ./
 
+# Test code
+RUN CGO_ENABLED=0 go test
+
 # Build the executable
 RUN CGO_ENABLED=0 go build \
 	-installsuffix 'static' \
@@ -28,17 +28,12 @@ RUN CGO_ENABLED=0 go build \
 # STAGE 2: build the container to run
 FROM scratch AS finale
 
-# copy certs
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
 # copy compiled app
 COPY --from=build /app /app
 
 # copy assets
 COPY /assets /assets
 
-# expose port 80 and 443
-EXPOSE 80 443
 
 # run binary
 ENTRYPOINT ["/app"]
