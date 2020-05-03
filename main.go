@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/go-redis/redis"
 	socketio "github.com/googollee/go-socket.io"
+	consulapi "github.com/hashicorp/consul/api"
 )
 
 func getEnv(key, fallback string) string {
@@ -18,15 +20,30 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
+	// consul
+	config := consulapi.DefaultConfig()
+	config.Address = "http://consul.service.consul:8500"
+	consul, err := consulapi.NewClient(config)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	kv := consul.KV()
+	redisPattern, _, err := kv.Get("REDISPATTERN", nil)
+	if err != nil || redisPattern == nil {
+		log.Fatalf("Could not get REDISPATTERN: %s", err)
+	}
+	fmt.Printf("KV: %v %s\n", redisPattern.Key, redisPattern.Value)
+
 	// redis connection
 	client := redis.NewClient(&redis.Options{
 		Addr: getEnv("REDISHOST", "localhost:6379"),
 	})
 
 	// subscribe to all channels
-	pubsub := client.PSubscribe("*")
+	pubsub := client.PSubscribe(string(redisPattern.Value))
 
-	_, err := pubsub.Receive()
+	_, err = pubsub.Receive()
 	if err != nil {
 		panic(err)
 	}
