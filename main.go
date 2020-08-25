@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/caddyserver/certmagic"
 	"github.com/go-redis/redis"
 	socketio "github.com/googollee/go-socket.io"
-	"github.com/mholt/certmagic"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 )
 
@@ -78,14 +78,14 @@ func main() {
 	}(server)
 
 	// certificate magic
-	certmagic.Agreed = true
-	certmagic.CA = certmagic.LetsEncryptStagingCA
+	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
 
 	cloudflare, err := cloudflare.NewDNSProvider()
 	if err != nil {
 		log.Fatal(err)
 	}
-	certmagic.DNSProvider = cloudflare
+	certmagic.DefaultACME.DNSProvider = cloudflare
 
 	mux := http.NewServeMux()
 	mux.Handle("/socket.io/", server)
